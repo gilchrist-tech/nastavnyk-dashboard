@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url';
 import { requireGa4Config } from './lib/config.js';
 import { getCompletedDateRange, parseCliArgs } from './lib/dates.js';
 import { collectGa4Traffic } from './lib/ga4.js';
-import { appendRows, SHEETS } from './lib/sheets.js';
+import { replaceRows, SHEETS } from './lib/sheets.js';
 
 export async function runGa4Collector(argv = process.argv.slice(2)) {
   const cli = parseCliArgs(argv);
@@ -27,21 +27,33 @@ export async function runGa4Collector(argv = process.argv.slice(2)) {
     return;
   }
 
-  await appendRows({
+  const trafficWrite = await replaceRows({
     credentialsPath: config.googleCredentialsPath,
     spreadsheetId: config.googleSheetsId,
     sheetName: SHEETS.trafficGa4,
-    values: result.trafficRows
+    values: result.trafficRows,
+    matchColumns: {
+      0: endDate
+    }
   });
 
-  await appendRows({
+  const dailyMetricsWrite = await replaceRows({
     credentialsPath: config.googleCredentialsPath,
     spreadsheetId: config.googleSheetsId,
     sheetName: SHEETS.dailyMetrics,
-    values: result.dailyMetricRows
+    values: result.dailyMetricRows,
+    matchColumns: {
+      0: endDate,
+      1: 'GA4'
+    }
   });
 
-  console.log(`Written to ${SHEETS.trafficGa4} and ${SHEETS.dailyMetrics}.`);
+  console.log(
+    `Updated ${SHEETS.trafficGa4}: deleted ${trafficWrite.deletedRowCount}, wrote ${trafficWrite.writtenRowCount}.`
+  );
+  console.log(
+    `Updated ${SHEETS.dailyMetrics}: deleted ${dailyMetricsWrite.deletedRowCount}, wrote ${dailyMetricsWrite.writtenRowCount}.`
+  );
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

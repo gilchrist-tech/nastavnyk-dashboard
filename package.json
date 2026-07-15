@@ -4,11 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check scripts/collect-daily.js && node --check scripts/collect-ga4.js && node --check scripts/collect-instagram.js && node --check scripts/check-setup.js",
+    "check": "node --check scripts/collect-daily.js && node --check scripts/collect-ga4.js && node --check scripts/collect-instagram.js && node --check scripts/collect-tiktok.js && node --check scripts/tiktok-auth-url.js && node --check scripts/tiktok-exchange-code.js && node --check scripts/check-setup.js",
     "check:setup": "node scripts/check-setup.js",
     "collect:daily": "node scripts/collect-daily.js",
     "collect:ga4": "node scripts/collect-ga4.js",
-    "collect:instagram": "node scripts/collect-instagram.js"
+    "collect:instagram": "node scripts/collect-instagram.js",
+    "collect:tiktok": "node scripts/collect-tiktok.js",
+    "tiktok:auth-url": "node scripts/tiktok-auth-url.js",
+    "tiktok:exchange-code": "node scripts/tiktok-exchange-code.js"
   },
   "dependencies": {
     "@google-analytics/data": "^6.1.0",

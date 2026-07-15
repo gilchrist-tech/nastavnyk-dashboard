@@ -17,6 +17,12 @@ console.log('\nOptional Instagram / Meta setup:');
 console.log(`${config.metaAccessToken ? 'OK' : 'MISSING'} META_ACCESS_TOKEN`);
 console.log(`${config.metaIgUserId || config.metaPageId ? 'OK' : 'MISSING'} META_IG_USER_ID or META_PAGE_ID`);
 
+console.log('\nOptional TikTok setup:');
+console.log(`${config.tiktokClientKey ? 'OK' : 'MISSING'} TIKTOK_CLIENT_KEY`);
+console.log(`${config.tiktokClientSecret ? 'OK' : 'MISSING'} TIKTOK_CLIENT_SECRET`);
+console.log(`${config.tiktokRedirectUri ? 'OK' : 'MISSING'} TIKTOK_REDIRECT_URI`);
+console.log(`${config.tiktokAccessToken || config.tiktokRefreshToken ? 'OK' : 'MISSING'} TikTok access or refresh token`);
+
 if (config.googleCredentialsPath) {
   console.log(
     `${fs.existsSync(config.googleCredentialsPath) ? 'OK' : 'MISSING'} credentials file: ${config.googleCredentialsPath}`

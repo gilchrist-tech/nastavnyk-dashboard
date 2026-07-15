@@ -35,7 +35,24 @@ export function getConfig() {
     metaLookbackDays: Number(getEnv('META_LOOKBACK_DAYS', { defaultValue: '1' })),
     metaAccessToken: getEnv('META_ACCESS_TOKEN'),
     metaIgUserId: getEnv('META_IG_USER_ID'),
-    metaPageId: getEnv('META_PAGE_ID')
+    metaPageId: getEnv('META_PAGE_ID'),
+    tiktokClientKey: getEnv('TIKTOK_CLIENT_KEY'),
+    tiktokClientSecret: getEnv('TIKTOK_CLIENT_SECRET'),
+    tiktokRedirectUri: getEnv('TIKTOK_REDIRECT_URI'),
+    tiktokScopes: getEnv('TIKTOK_SCOPES', {
+      defaultValue: 'user.info.basic,user.info.profile,user.info.stats,video.list'
+    }),
+    tiktokAccessToken: getEnv('TIKTOK_ACCESS_TOKEN'),
+    tiktokRefreshToken: getEnv('TIKTOK_REFRESH_TOKEN'),
+    tiktokOpenId: getEnv('TIKTOK_OPEN_ID'),
+    tiktokUserFields: getEnv('TIKTOK_USER_FIELDS', {
+      defaultValue: 'open_id,union_id,avatar_url,display_name,username,follower_count,following_count,likes_count,video_count'
+    }),
+    tiktokVideoFields: getEnv('TIKTOK_VIDEO_FIELDS', {
+      defaultValue: 'id,create_time,share_url,embed_link,title,video_description,duration,view_count,like_count,comment_count,share_count'
+    }),
+    tiktokVideoLimit: Number(getEnv('TIKTOK_VIDEO_LIMIT', { defaultValue: '40' })),
+    tiktokLookbackDays: Number(getEnv('TIKTOK_LOOKBACK_DAYS', { defaultValue: '1' }))
   };
 }
 

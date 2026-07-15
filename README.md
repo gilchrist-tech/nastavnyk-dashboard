@@ -4,7 +4,7 @@
 
 ## Етап 1: Instagram + GA4 + Google Sheets
 
-Поточний код уже готує щоденний збір GA4 у Google Sheets. Instagram-скрипт поки залишений як підготовлений конектор: він перевіряє доступ до Meta Graph API, а мапінг у таблицю буде наступним кроком після отримання токена.
+Поточний код збирає GA4 і Instagram у Google Sheets. TikTok collector підготовлений як наступне джерело: після TikTok OAuth він збиратиме профільні лічильники й performance публічних відео.
 
 Дані GA4 пишуться в українські аркуші:
 
@@ -12,6 +12,11 @@
 - `Щоденні метрики соцмереж`
 
 Instagram collector пише в українські аркуші:
+
+- `Щоденні метрики соцмереж`
+- `Ефективність публікацій`
+
+TikTok collector пише в ті самі аркуші:
 
 - `Щоденні метрики соцмереж`
 - `Ефективність публікацій`
@@ -56,6 +61,43 @@ META_PAGE_ID=1234...
 ```
 
 Для insights потрібен Instagram Business або Creator account, підключений до Facebook Page, і Meta permissions для читання профілю/медіа та insights.
+
+8. Для TikTok створіть app у TikTok Developer Portal і додайте Display API / Login Kit scopes:
+
+```text
+user.info.basic
+user.info.profile
+user.info.stats
+video.list
+```
+
+9. Заповніть у `.env.local` TikTok app credentials і redirect URI:
+
+```env
+TIKTOK_CLIENT_KEY=...
+TIKTOK_CLIENT_SECRET=...
+TIKTOK_REDIRECT_URI=https://...
+```
+
+Після цього згенеруйте authorization URL:
+
+```bash
+npm run tiktok:auth-url
+```
+
+Відкрийте URL, авторизуйте акаунт TikTok і скопіюйте `code` з callback URL. Обміняти code на токени можна так:
+
+```bash
+npm run tiktok:exchange-code -- --code=...
+```
+
+Або скопіюйте тільки `code` у clipboard і запустіть:
+
+```bash
+npm run tiktok:exchange-code -- --code-from-clipboard
+```
+
+Скрипт запише `TIKTOK_ACCESS_TOKEN`, `TIKTOK_REFRESH_TOKEN`, `TIKTOK_OPEN_ID` і дати закінчення в `.env.local`. Access token TikTok короткий, тому collector автоматично оновлює його через refresh token перед збором.
 
 ## Команди
 
@@ -105,6 +147,20 @@ npm run collect:instagram
 npm run collect:instagram -- --dry-run
 ```
 
+Зібрати TikTok profile stats і video performance:
+
+```bash
+npm run collect:tiktok
+```
+
+Повторний запуск за ту саму дату оновлює TikTok-рядки в таблиці, а не створює дублікати.
+
+Перевірити TikTok без запису в таблицю:
+
+```bash
+npm run collect:tiktok -- --dry-run
+```
+
 Запустити всі джерела, які вже підключені:
 
 ```bash
@@ -114,5 +170,4 @@ npm run collect:daily
 ## Далі
 
 - Додати сигнали та попередження на основі Instagram + GA4.
-- Після Instagram підключити TikTok.
 - Після TikTok підключити LinkedIn.

@@ -81,6 +81,6 @@ npm run collect:daily
 
 ## Далі
 
-- Додати повний Instagram collector: щоденні метрики, ефективність постів, alerts.
+- Додати повний Instagram-колектор: щоденні метрики, ефективність постів, сигнали та попередження.
 - Після Instagram підключити TikTok.
 - Після TikTok підключити LinkedIn.

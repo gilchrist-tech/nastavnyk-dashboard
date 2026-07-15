@@ -87,6 +87,7 @@ export async function collectGa4Traffic({
         desc: true
       }
     ],
+    metricAggregations: ['TOTAL'],
     limit: 250
   });
 

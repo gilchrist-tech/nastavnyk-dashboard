@@ -10,6 +10,18 @@ const ACCOUNT_METRIC_LABELS = {
   total_interactions: 'Взаємодії'
 };
 
+const ACCOUNT_TOTAL_VALUE_METRICS = new Set([
+  'accounts_engaged',
+  'comments',
+  'likes',
+  'profile_links_taps',
+  'profile_views',
+  'shares',
+  'total_interactions',
+  'views',
+  'website_clicks'
+]);
+
 const PROFILE_FIELD_LABELS = {
   followers_count: 'Підписники всього',
   media_count: 'Публікації всього'
@@ -243,11 +255,13 @@ export async function collectInstagram({
   });
 
   const profile = instagram.profile;
+  const timeSeriesAccountMetrics = accountMetrics.filter((metric) => !ACCOUNT_TOTAL_VALUE_METRICS.has(metric));
+  const totalValueAccountMetrics = accountMetrics.filter((metric) => ACCOUNT_TOTAL_VALUE_METRICS.has(metric));
   const accountInsights = await getInsights({
     graphVersion,
     accessToken,
     nodeId: instagram.igUserId,
-    metrics: accountMetrics,
+    metrics: timeSeriesAccountMetrics,
     params: {
       period: 'day',
       since: startDate,
@@ -256,6 +270,21 @@ export async function collectInstagram({
     warnings,
     context: 'Instagram account insights'
   });
+  const totalValueAccountInsights = await getInsights({
+    graphVersion,
+    accessToken,
+    nodeId: instagram.igUserId,
+    metrics: totalValueAccountMetrics,
+    params: {
+      period: 'day',
+      metric_type: 'total_value',
+      since: startDate,
+      until: endDateExclusive
+    },
+    warnings,
+    context: 'Instagram account total-value insights'
+  });
+  Object.assign(accountInsights, totalValueAccountInsights);
 
   const dailyMetricRows = [
     ...Object.entries(PROFILE_FIELD_LABELS)

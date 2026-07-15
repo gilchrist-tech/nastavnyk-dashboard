@@ -1,35 +1,89 @@
+import { pathToFileURL } from 'node:url';
 import { getConfig } from './lib/config.js';
+import { getCompletedDateRange, parseCliArgs } from './lib/dates.js';
+import { collectInstagram } from './lib/instagram.js';
+import { replaceRows, SHEETS } from './lib/sheets.js';
 
-async function main() {
+export async function runInstagramCollector(argv = process.argv.slice(2)) {
+  const cli = parseCliArgs(argv);
   const config = getConfig();
 
-  if (!config.metaAccessToken || !config.metaIgUserId) {
+  if (!config.metaAccessToken) {
     console.log('Instagram collector is not configured yet.');
-    console.log('Fill META_ACCESS_TOKEN and META_IG_USER_ID in .env.local after Meta API setup.');
-    return;
+    console.log('Fill META_ACCESS_TOKEN and META_IG_USER_ID or META_PAGE_ID in .env.local after Meta API setup.');
+    return { skipped: true };
   }
 
-  const metricNames = config.metaInsightMetrics
-    .split(',')
-    .map((metric) => metric.trim())
-    .filter(Boolean);
+  const fallbackRange = getCompletedDateRange(config.metaLookbackDays);
+  const startDate = cli.startDate || fallbackRange.startDate;
+  const endDate = cli.endDate || fallbackRange.endDate;
 
-  const url = new URL(`https://graph.facebook.com/${config.metaGraphVersion}/${config.metaIgUserId}/insights`);
-  url.searchParams.set('metric', metricNames.join(','));
-  url.searchParams.set('period', 'day');
-  url.searchParams.set('access_token', config.metaAccessToken);
+  const result = await collectInstagram({
+    graphVersion: config.metaGraphVersion,
+    accessToken: config.metaAccessToken,
+    igUserId: config.metaIgUserId,
+    pageId: config.metaPageId,
+    accountInsightMetrics: config.metaAccountInsightMetrics,
+    mediaInsightMetrics: config.metaMediaInsightMetrics,
+    mediaLimit: config.metaMediaLimit,
+    startDate,
+    endDate
+  });
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Meta API error ${response.status}: ${await response.text()}`);
+  console.log(
+    `Instagram rows collected for ${startDate} to ${endDate}: ${result.accountMetricCount} account metrics, ${result.postCount} posts.`
+  );
+  if (result.profile?.username) {
+    console.log(`Instagram account: @${result.profile.username}`);
+  }
+  for (const warning of result.warnings) {
+    console.warn(`Warning: ${warning}`);
   }
 
-  const data = await response.json();
-  console.log(JSON.stringify(data, null, 2));
-  console.log('Next step: map Instagram insights into Ukrainian Google Sheets tabs.');
+  if (cli.dryRun) {
+    console.log('Dry run enabled. No rows written to Google Sheets.');
+    console.log(JSON.stringify({
+      dailyMetricRows: result.dailyMetricRows.slice(0, 5),
+      postRows: result.postRows.slice(0, 3)
+    }, null, 2));
+    return result;
+  }
+
+  const dailyMetricsWrite = await replaceRows({
+    credentialsPath: config.googleCredentialsPath,
+    spreadsheetId: config.googleSheetsId,
+    sheetName: SHEETS.dailyMetrics,
+    values: result.dailyMetricRows,
+    matchColumns: {
+      0: endDate,
+      1: 'Instagram'
+    }
+  });
+
+  const postsWrite = await replaceRows({
+    credentialsPath: config.googleCredentialsPath,
+    spreadsheetId: config.googleSheetsId,
+    sheetName: SHEETS.postPerformance,
+    values: result.postRows,
+    matchColumns: {
+      0: endDate,
+      1: 'Instagram'
+    }
+  });
+
+  console.log(
+    `Updated ${SHEETS.dailyMetrics}: deleted ${dailyMetricsWrite.deletedRowCount}, wrote ${dailyMetricsWrite.writtenRowCount}.`
+  );
+  console.log(
+    `Updated ${SHEETS.postPerformance}: deleted ${postsWrite.deletedRowCount}, wrote ${postsWrite.writtenRowCount}.`
+  );
+
+  return result;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  runInstagramCollector().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

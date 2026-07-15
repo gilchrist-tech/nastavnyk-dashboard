@@ -13,6 +13,10 @@ for (const [name, ok] of checks) {
   console.log(`${ok ? 'OK' : 'MISSING'} ${name}`);
 }
 
+console.log('\nOptional Instagram / Meta setup:');
+console.log(`${config.metaAccessToken ? 'OK' : 'MISSING'} META_ACCESS_TOKEN`);
+console.log(`${config.metaIgUserId || config.metaPageId ? 'OK' : 'MISSING'} META_IG_USER_ID or META_PAGE_ID`);
+
 if (config.googleCredentialsPath) {
   console.log(
     `${fs.existsSync(config.googleCredentialsPath) ? 'OK' : 'MISSING'} credentials file: ${config.googleCredentialsPath}`

@@ -1,7 +1,9 @@
 import { runGa4Collector } from './collect-ga4.js';
+import { runInstagramCollector } from './collect-instagram.js';
 
 async function main() {
   await runGa4Collector(process.argv.slice(2));
+  await runInstagramCollector(process.argv.slice(2));
 }
 
 main().catch((error) => {

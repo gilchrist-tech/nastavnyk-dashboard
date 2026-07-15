@@ -25,7 +25,14 @@ export function getConfig() {
     }),
     ga4LookbackDays: Number(getEnv('GA4_LOOKBACK_DAYS', { defaultValue: '1' })),
     metaGraphVersion: getEnv('META_GRAPH_VERSION', { defaultValue: 'v25.0' }),
-    metaInsightMetrics: getEnv('META_INSIGHT_METRICS', { defaultValue: 'reach' }),
+    metaAccountInsightMetrics: getEnv('META_ACCOUNT_INSIGHT_METRICS', {
+      defaultValue: 'reach,views,follower_count,profile_views,website_clicks'
+    }),
+    metaMediaInsightMetrics: getEnv('META_MEDIA_INSIGHT_METRICS', {
+      defaultValue: 'reach,views,likes,comments,saved,shares'
+    }),
+    metaMediaLimit: Number(getEnv('META_MEDIA_LIMIT', { defaultValue: '25' })),
+    metaLookbackDays: Number(getEnv('META_LOOKBACK_DAYS', { defaultValue: '1' })),
     metaAccessToken: getEnv('META_ACCESS_TOKEN'),
     metaIgUserId: getEnv('META_IG_USER_ID'),
     metaPageId: getEnv('META_PAGE_ID')

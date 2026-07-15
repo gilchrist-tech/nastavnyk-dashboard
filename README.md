@@ -11,6 +11,11 @@
 - `Трафік GA4`
 - `Щоденні метрики соцмереж`
 
+Instagram collector пише в українські аркуші:
+
+- `Щоденні метрики соцмереж`
+- `Ефективність публікацій`
+
 ## Налаштування
 
 1. Встановіть залежності:
@@ -40,6 +45,17 @@ GA4_REGISTRATION_EVENT_NAME=sign_up
 ```
 
 `GOOGLE_SHEETS_ID` вже має дефолт для `NASTAVNYK_COMMAND_CENTER`, але його можна перевизначити у `.env.local`.
+
+7. Для Instagram додайте Meta access token і ID Instagram professional account або Facebook Page:
+
+```env
+META_ACCESS_TOKEN=...
+META_IG_USER_ID=1784...
+# або
+META_PAGE_ID=1234...
+```
+
+Для insights потрібен Instagram Business або Creator account, підключений до Facebook Page, і Meta permissions для читання профілю/медіа та insights.
 
 ## Команди
 
@@ -75,6 +91,20 @@ npm run collect:ga4 -- --dry-run
 npm run collect:ga4 -- --start-date=2026-07-14 --end-date=2026-07-14
 ```
 
+Зібрати Instagram account insights і пост performance:
+
+```bash
+npm run collect:instagram
+```
+
+Повторний запуск за ту саму дату оновлює Instagram-рядки в таблиці, а не створює дублікати.
+
+Перевірити Instagram без запису в таблицю:
+
+```bash
+npm run collect:instagram -- --dry-run
+```
+
 Запустити всі джерела, які вже підключені:
 
 ```bash
@@ -83,6 +113,6 @@ npm run collect:daily
 
 ## Далі
 
-- Додати повний Instagram-колектор: щоденні метрики, ефективність постів, сигнали та попередження.
+- Додати сигнали та попередження на основі Instagram + GA4.
 - Після Instagram підключити TikTok.
 - Після TikTok підключити LinkedIn.

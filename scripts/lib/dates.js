@@ -14,6 +14,12 @@ export function toIsoDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
+export function nextIsoDate(isoDate) {
+  const date = new Date(`${isoDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return toIsoDate(date);
+}
+
 export function getCompletedDateRange(lookbackDays = 1) {
   const now = new Date();
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));

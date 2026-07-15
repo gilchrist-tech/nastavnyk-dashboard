@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+npm-debug.log*
+
+.env
+.env.local
+.env.*.local
+
+credentials/
+service-account*.json
+*.credentials.json
+
+tmp/
+dist/
+coverage/

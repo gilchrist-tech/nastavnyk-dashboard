@@ -7,10 +7,12 @@ const RANGES = [
   "'Завдання менеджера'!A1:K300",
   "'Колоборації'!A1:I100",
   "'Automation Log'!A1:N200",
-  "'Моніторинг конкурентів'!A1:N200"
+  "'Моніторинг конкурентів'!A1:N200",
+  "'KPI менеджера'!A1:I200",
+  "'Ідеї контенту'!A1:H200"
 ];
 
-const KEYS = ['dailyMetrics', 'posts', 'alerts', 'tasks', 'collabs', 'automationLog', 'competitors'];
+const KEYS = ['dailyMetrics', 'posts', 'alerts', 'tasks', 'collabs', 'automationLog', 'competitors', 'kpi', 'ideas'];
 
 export default async function handler(req, res) {
   try {

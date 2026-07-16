@@ -12,7 +12,10 @@
         .header { background: linear-gradient(135deg, #3735C4 0%, #F93D07 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; }
         .header h1 { font-size: 28px; margin-bottom: 10px; }
         .header p { opacity: .92; font-size: 14px; }
-        h2 { margin: 30px 0 16px 0; font-size: 18px; }
+        h2 { margin: 30px 0 6px 0; font-size: 18px; }
+        .hint { margin: 0 0 16px 0; font-size: 13px; color: #6B5E4A; line-height: 1.5; max-width: 1100px; }
+        .card .hint-s { margin-top: 6px; font-size: 11px; color: #8A7F6C; line-height: 1.4; }
+        .kpi-status { font-weight: 700; }
         .kpi-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 10px; }
         .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .card .label { margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase; }
@@ -65,12 +68,20 @@
 
         <div id="content" style="display:none">
             <h2>🚨 Активні сигнали</h2>
+            <p class="hint">Ксеніє, починай день звідси. Це проблеми й аномалії, які автоматика знайшла в даних. «Критично» і «Високий» — реагуй сьогодні ж; рядок «Дія» підказує перший крок. Коли розібралась — постав статус «Виконано» в аркуші «Сигнали та попередження» таблиці, і сигнал зникне з дашборду.</p>
             <div class="grid" id="alerts"></div>
 
             <h2>📈 Ключові показники (останній день з даними)</h2>
+            <p class="hint">Стан за останній зібраний день. Стрілка порівнює з середнім за попередні 7 днів: зелена ▲ — день кращий за звичайний, червона ▼ — гірший. Якщо червоне тримається кілька днів поспіль — це вже тренд, шукай причину (частота постів, формат, час публікації).</p>
             <div class="kpi-cards" id="kpi"></div>
 
+            <h2>🎯 KPI менеджера — поточний місяць</h2>
+            <p class="hint">Твої місячні цілі з аркуша «KPI менеджера». <b>Факт</b> рахується автоматично із зібраних даних (де це можливо). <b>Темп</b> показує, чи встигаєш до кінця місяця: «у темпі ✅» = якщо продовжувати так само, мінімум буде виконано. KPI з позначкою «ручне внесення» автоматика виміряти не може — заповнюй їх в таблиці сама (ER, реєстрації, час відповіді на DM).</p>
+            <div id="kpi-verdict" class="grid" style="margin-bottom:12px"></div>
+            <div class="table-scroll"><table id="kpi-month"></table></div>
+
             <h2>📉 Динаміка (останні 30 днів)</h2>
+            <p class="hint">Тренди за місяць. На що дивитись: чи росте охоплення тиждень до тижня; чи дають публікації сплески сесій на сайті наступного дня; провали до нуля — дні без публікацій. Фіолетова частина TikTok-графіка після 12.07 — та сама проблема дистрибуції з сигналу вище.</p>
             <div class="charts">
                 <div class="chart-card"><h3>GA4: сесії та ключові події</h3><div class="chart-wrap"><canvas id="ch-ga4"></canvas></div></div>
                 <div class="chart-card"><h3>Instagram: охоплення та перегляди</h3><div class="chart-wrap"><canvas id="ch-ig"></canvas></div></div>
@@ -79,18 +90,27 @@
             </div>
 
             <h2>🎬 Останні публікації</h2>
+            <p class="hint">Що дав кожен пост. Порівнюй охоплення між собою: формати-лідери (як «Тест для батьків» — 580 охоплення) повторюй і масштабуй, слабкі хуки переписуй. Позначка «імпорт» = дані завантажені заднім числом 16.07, метрики точні, але поденна динаміка по них не рахувалась.</p>
             <div class="table-scroll"><table id="posts"></table></div>
 
+            <h2>💡 Ідеї контенту</h2>
+            <p class="hint">Конкретні ідеї Reels і постів, які автоматика генерує з аналізу конкурентів (War Room) і наших найкращих публікацій. Бери в роботу: додай у контент-план, а в аркуші «Ідеї контенту» постав статус «В роботі» або «Відхилена» — тоді список оновиться.</p>
+            <div class="table-scroll"><table id="ideas"></table></div>
+
             <h2>✅ Відкриті завдання менеджера</h2>
+            <p class="hint">Список справ у порядку пріоритету — кожне завдання має причину в колонці KPI і дедлайн. Виконала — постав «Виконано» в аркуші «Завдання менеджера», і воно зникне звідси. Якщо завдання незрозуміле або нездійсненне — напиши коментар у колонці «Нотатки», не ігноруй мовчки.</p>
             <div class="table-scroll"><table id="tasks"></table></div>
 
             <h2>🤝 Колаборації</h2>
+            <p class="hint">CPC = вартість ÷ кліки, головна метрика блогера: до 10 грн — добре, понад 20 грн — дорого. Правило: статистику (охоплення, кліки) запитуй у блогера в день виходу, інакше вона губиться — рядки з «MISSING» саме такі. Найкращий приклад: @lena_shalim — 2,4 грн/клік.</p>
             <div class="table-scroll"><table id="collabs"></table></div>
 
             <h2>🥊 Конкуренти</h2>
+            <p class="hint">Instagram і TikTok блокують автоматичний збір чужих сторінок, тому конкурентів переглядаємо вручну: раз на тиждень відкрий акаунти Buki, Mathema, ZNOhub, AntiSchool, подивись останні публікації і занеси у War Room — що зробили, яка слабкість, який наш контрудар. З цього автоматика генерує ідеї контенту вище.</p>
             <div class="grid" id="competitors"></div>
 
             <h2>⚙️ Останній запуск автоматизації</h2>
+            <p class="hint">Технічний блок: чи зібрались дані сьогодні вранці. Статус COMPLETE — все добре; якщо бачиш FAILED або PARTIAL — дані на дашборді можуть бути неповними, скажи Gilbert.</p>
             <div class="grid" id="autolog"></div>
         </div>
 
@@ -160,8 +180,8 @@ function chart(id, labels, datasets, type = 'line') {
     });
 }
 
-const card = (label, value, delta, color) =>
-    `<div class="card" style="border-left:4px solid ${color}"><p class="label">${label}</p><h3 class="value">${value}</h3>${delta || ''}</div>`;
+const card = (label, value, delta, color, hint) =>
+    `<div class="card" style="border-left:4px solid ${color}"><p class="label">${label}</p><h3 class="value">${value}</h3>${delta || ''}${hint ? '<p class="hint-s">' + hint + '</p>' : ''}</div>`;
 
 function renderTable(el, headers, rows) {
     el.innerHTML = '<tr>' + headers.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr>' +
@@ -201,14 +221,67 @@ async function load() {
     const keyEv7 = avg(prev7.map(d => mval(map, d, 'GA4', 'Ключові події')));
 
     document.getElementById('kpi').innerHTML =
-        card('IG підписники', fmt(igFol), deltaHtml(igFol, igFolW, 'за 7 дн'), C.blue) +
-        card('IG охоплення / день', fmt(igReach), deltaHtml(igReach, igReach7, 'vs 7-дн серед.'), C.blue) +
-        card('IG перегляди / день', fmt(mval(map, last, 'Instagram', 'Перегляди')), '', C.blue) +
-        card('Кліки на сайт (IG)', fmt(mval(map, last, 'Instagram', 'Кліки на сайт')), '', C.orange) +
-        card('GA4 сесії / день', fmt(sess), deltaHtml(sess, sess7, 'vs 7-дн серед.'), C.teal) +
-        card('GA4 ключові події', fmt(keyEv), deltaHtml(keyEv, keyEv7, 'vs 7-дн серед.'), C.teal) +
-        card('TikTok підписники', fmt(mval(map, last, 'TikTok', 'Підписники всього')), '', C.purple) +
-        card('TikTok перегляди / день', fmt(mval(map, last, 'TikTok', 'Перегляди відео')), '', C.purple);
+        card('IG підписники', fmt(igFol), deltaHtml(igFol, igFolW, 'за 7 дн'), C.blue, 'Скільки людей підписано на @nastavnyk_ua зараз. Мета — стабільний приріст щотижня.') +
+        card('IG охоплення / день', fmt(igReach), deltaHtml(igReach, igReach7, 'vs 7-дн серед.'), C.blue, 'Скільки унікальних людей бачили наш контент за день. Головний показник «чи нас видно».') +
+        card('IG перегляди / день', fmt(mval(map, last, 'Instagram', 'Перегляди')), '', C.blue, 'Загальні покази всіх форматів (Reels, пости, сторіс). Більші за охоплення = людей дивляться повторно.') +
+        card('Кліки на сайт (IG)', fmt(mval(map, last, 'Instagram', 'Кліки на сайт')), '', C.orange, 'Переходи на nastavnyk.com.ua з профілю і сторіс. Це міст від контенту до реєстрацій — 0 тут означає слабкий CTA.') +
+        card('GA4 сесії / день', fmt(sess), deltaHtml(sess, sess7, 'vs 7-дн серед.'), C.teal, 'Візити на сайт з усіх джерел. Порівнюй сплески з датами публікацій.') +
+        card('GA4 ключові події', fmt(keyEv), deltaHtml(keyEv, keyEv7, 'vs 7-дн серед.'), C.teal, 'Цільові дії на сайті (заявки, реєстрації, контакти). Найважливіша цифра — заради неї весь контент.') +
+        card('TikTok підписники', fmt(mval(map, last, 'TikTok', 'Підписники всього')), '', C.purple, 'Аудиторія TikTok-акаунта. База мала — кожне вірусне відео може її подвоїти.') +
+        card('TikTok перегляди / день', fmt(mval(map, last, 'TikTok', 'Перегляди відео')), '', C.purple, 'Сумарні перегляди наших відео за день. Зараз аномально низькі — див. сигнал вище.');
+
+    // KPI менеджера — поточний місяць
+    const MONTHS = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+    const nowD = last ? new Date(last) : new Date();
+    const monthName = MONTHS[nowD.getMonth()] + ' ' + nowD.getFullYear();
+    const monthPrefix = last ? last.slice(0, 7) : '';
+    const daysInMonth = new Date(nowD.getFullYear(), nowD.getMonth() + 1, 0).getDate();
+    const pace = nowD.getDate() / daysInMonth;
+    const mDates = allDates.filter(d => d.startsWith(monthPrefix));
+    const mSum = (p, m) => { const v = mDates.map(d => mval(map, d, p, m)).filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) : null; };
+    const monthPosts = data.posts.slice(1).filter(r => (r[0] || '').startsWith(monthPrefix)).length;
+
+    const kpiRows = data.kpi || [];
+    const startIdx = kpiRows.findIndex(r => (r[0] || '').trim() === monthName);
+    const kpiItems = [];
+    if (startIdx !== -1) {
+        for (let i = startIdx + 2; i < kpiRows.length; i++) {
+            const r = kpiRows[i];
+            if (!r || !r[0] || /^ЗАГАЛЬНА/.test(r[0])) break;
+            kpiItems.push({ name: r[0], min: num(r[1]), opt: num(r[2]), weight: r[3] || '', manualFact: num(r[4]) });
+        }
+    }
+    const factFor = n =>
+        /Охоплення Instagram/.test(n) ? { v: mSum('Instagram', 'Охоплення'), note: 'сума за місяць, авто' } :
+        /Нові підписники Instagram/.test(n) ? { v: mSum('Instagram', 'Нові підписники'), note: 'сума за місяць, авто' } :
+        /Переходи на сайт/.test(n) ? { v: mSum('Instagram', 'Кліки на сайт'), note: 'лише кліки з IG, авто' } :
+        /Одиниць контенту/.test(n) ? { v: monthPosts, note: 'лише пости IG+TikTok, без сторіс' } :
+        null;
+
+    let ok = 0, behind = 0, manual = 0;
+    const kpiHtml = kpiItems.map(k => {
+        const auto = factFor(k.name);
+        const fact = k.manualFact ?? auto?.v ?? null;
+        const isManual = fact == null;
+        let status, cls;
+        if (isManual) { status = 'ручне внесення'; cls = 'flat'; manual++; }
+        else if (k.min != null && fact >= k.min) { status = 'мінімум виконано ✅'; cls = 'up'; ok++; }
+        else if (k.min != null && fact >= k.min * pace) { status = 'у темпі ✅'; cls = 'up'; ok++; }
+        else { status = 'відстає ⚠️'; cls = 'down'; behind++; }
+        const pct = fact != null && k.opt ? Math.round(fact / k.opt * 100) + '%' : '—';
+        return `<tr><td>${esc(k.name)}</td><td class="num">${fmt(k.min)}</td><td class="num">${fmt(k.opt)}</td>
+            <td class="num">${fact != null ? fmt(fact) : '—'}</td><td class="num">${pct}</td>
+            <td><span class="kpi-status ${cls}">${status}</span></td><td style="color:#8A7F6C;font-size:12px">${esc(auto?.note || (k.manualFact != null ? 'внесено вручну' : 'автоматика не вимірює — заповни в таблиці'))}</td></tr>`;
+    });
+    renderTable(document.getElementById('kpi-month'),
+        ['KPI', 'Мінімум', 'Оптимум', 'Факт (день ' + nowD.getDate() + ' з ' + daysInMonth + ')', '% від оптимуму', 'Темп', 'Джерело факту'],
+        kpiHtml);
+    document.getElementById('kpi-verdict').innerHTML = kpiItems.length ? `
+        <div class="alert ${behind ? 'prio-Середній' : ''}">
+            <h4>Підсумок для Ксенії (${esc(monthName)}, день ${nowD.getDate()} з ${daysInMonth})</h4>
+            <p>З вимірюваних KPI: <b class="up">${ok} у темпі або виконано</b>${behind ? `, <b class="down">${behind} відстає</b>` : ''} · ${manual} потребують ручного внесення в аркуш «KPI менеджера».</p>
+            <p style="margin-top:6px">${behind ? 'Подивись рядки «відстає ⚠️» — саме туди зараз спрямовуй контент і зусилля.' : 'Вимірювані показники в нормі темпу місяця — тримай ритм.'} Повна оцінка виконання — в кінці місяця, коли будуть заповнені ручні KPI.</p>
+        </div>` : '<div class="alert"><p>Блок місяця не знайдено в аркуші «KPI менеджера»</p></div>';
 
     const alerts = data.alerts.slice(1).filter(r => r[0] && !/виконано|закрито|скасовано/i.test(r[10] || ''));
     document.getElementById('alerts').innerHTML = alerts.length ? alerts.map(r => `
@@ -244,6 +317,14 @@ async function load() {
             <td><a href="${esc(r[2])}" target="_blank" style="color:#3735C4;text-decoration:none">${esc((r[4] || '').slice(0, 60)) || 'відкрити'}</a></td>
             <td class="num">${fmt(num(r[5]))}</td><td class="num">${fmt(num(r[6]))}</td>
             <td class="num">${fmt(num(r[7]))}</td><td class="num">${fmt(num(r[8]))}</td><td class="num">${fmt(num(r[9]))}</td></tr>`));
+
+    const ideas = (data.ideas || []).slice(1).filter(r => r[0] && !/відхилена|виконано|опубліковано/i.test(r[7] || ''));
+    renderTable(document.getElementById('ideas'),
+        ['Дата', 'Ідея', 'Формат', 'Платформа', 'Хук', 'CTA', 'На основі чого', 'Статус'],
+        ideas.map(r => `<tr><td>${esc(r[0])}</td><td><b>${esc(r[2])}</b></td><td>${esc(r[3])}</td><td>${esc(r[4])}</td>
+            <td style="font-style:italic">«${esc(r[5])}»</td><td>${esc(r[6])}</td>
+            <td style="color:#8A7F6C;font-size:12px">${esc(r[1])}</td>
+            <td><span class="badge ${/В роботі/i.test(r[7]) ? 'b-wait' : 'b-new'}">${esc(r[7])}</span></td></tr>`));
 
     const tasks = data.tasks.slice(1).filter(r => r[3] && !/виконано|скасовано/i.test(r[8] || ''));
     renderTable(document.getElementById('tasks'),

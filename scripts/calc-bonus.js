@@ -1,5 +1,7 @@
 import { pathToFileURL } from 'node:url';
+import { google } from 'googleapis';
 import { getConfig } from './lib/config.js';
+import { createGoogleAuth } from './lib/google-auth.js';
 import { createSheetsClient, quoteSheetName } from './lib/sheets.js';
 
 // Розрахунок бонуса менеджера в грн: Мінімум = 0%, Оптимум = 100%, між ними — пропорційно.
@@ -9,6 +11,9 @@ import { createSheetsClient, quoteSheetName } from './lib/sheets.js';
 
 const MAX_BONUS = 3000;
 const BASE_SALARY = 13000;
+const REGISTRATION_EVENT = 'ads_conversion_Sign_Up_1';
+const SOCIAL_SOURCE_RE = /instagram|tiktok|facebook|fb\.|linkedin|telegram|threads|linktr/i;
+const TEACHER_RE = /role=teacher|type=tutor|become_tutor/i;
 const MONTHS = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
   'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
 
@@ -22,6 +27,33 @@ const fmtUah = (n) => new Intl.NumberFormat('uk-UA').format(Math.round(n));
 async function getValues(sheets, spreadsheetId, range) {
   const r = await sheets.spreadsheets.values.get({ spreadsheetId, range });
   return r.data.values || [];
+}
+
+// Реєстрації з соцмереж за місяць: GA4-оцінка (подія сторінки /register, унікальні users,
+// джерело сесії = соцмережа; localhost/тестові IP відсікаються).
+async function socialRegistrations({ credentialsPath, propertyId, startDate, endDate }) {
+  const analytics = google.analyticsdata({ version: 'v1beta', auth: createGoogleAuth(credentialsPath) });
+  const report = await analytics.properties.runReport({
+    property: `properties/${propertyId}`,
+    requestBody: {
+      dateRanges: [{ startDate, endDate }],
+      dimensions: [{ name: 'sessionSource' }, { name: 'pageLocation' }],
+      metrics: [{ name: 'totalUsers' }],
+      dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { value: REGISTRATION_EVENT } } },
+      limit: 250
+    }
+  });
+  let students = 0;
+  let teachers = 0;
+  for (const row of report.data.rows || []) {
+    const source = row.dimensionValues[0].value || '';
+    const url = row.dimensionValues[1].value || '';
+    if (!url.includes('nastavnyk.com.ua') || !SOCIAL_SOURCE_RE.test(source)) continue;
+    const users = Number(row.metricValues[0].value || 0);
+    if (TEACHER_RE.test(url)) teachers += users;
+    else students += users;
+  }
+  return { students, teachers };
 }
 
 export async function runBonusCalc() {
@@ -49,11 +81,19 @@ export async function runBonusCalc() {
       .map((r) => num(r[3])).filter((x) => x != null);
     return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
   };
+  const socialRegs = await socialRegistrations({
+    credentialsPath: config.googleCredentialsPath,
+    propertyId: config.ga4PropertyId,
+    startDate: `${monthPrefix}-01`,
+    endDate: lastDate
+  });
   const AUTO_FACTS = {
     'Охоплення Instagram (місяць)': () => mSum('Охоплення'),
     'Нові підписники Instagram': () => mSum('Нові підписники'),
     'Переходи на сайт з соцмереж': () => mSum('Кліки на сайт'),
-    'Одиниць контенту на місяць': () => posts.slice(1).filter((r) => (r[0] || '').startsWith(monthPrefix)).length || null
+    'Одиниць контенту на місяць': () => posts.slice(1).filter((r) => (r[0] || '').startsWith(monthPrefix)).length || null,
+    'Реєстрації учнів (з соцмереж)': () => socialRegs.students || null,
+    'Реєстрації вчителів (з соцмереж)': () => socialRegs.teachers || null
   };
 
   // --- Блок місяця в «KPI менеджера» ---

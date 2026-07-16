@@ -12,7 +12,8 @@
     "collect:tiktok": "node scripts/collect-tiktok.js",
     "tiktok:auth-url": "node scripts/tiktok-auth-url.js",
     "tiktok:exchange-code": "node scripts/tiktok-exchange-code.js",
-    "export:manager": "node scripts/export-manager.js"
+    "export:manager": "node scripts/export-manager.js",
+    "calc:bonus": "node scripts/calc-bonus.js"
   },
   "dependencies": {
     "@google-analytics/data": "^6.1.0",

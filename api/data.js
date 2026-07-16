@@ -15,6 +15,11 @@ const RANGES = [
 const KEYS = ['dailyMetrics', 'posts', 'alerts', 'tasks', 'collabs', 'automationLog', 'competitors', 'kpi', 'ideas'];
 
 export default async function handler(req, res) {
+  const expectedKey = process.env.DASHBOARD_KEY;
+  if (expectedKey && req.query.key !== expectedKey) {
+    res.status(401).json({ error: 'Потрібен ключ доступу: відкрийте дашборд за посиланням з ?key=' });
+    return;
+  }
   try {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
     const auth = new google.auth.GoogleAuth({
@@ -31,6 +36,8 @@ export default async function handler(req, res) {
     response.data.valueRanges.forEach((valueRange, index) => {
       data[KEYS[index]] = valueRange.values || [];
     });
+    // Access Matrix: метрика «Дохід» = OWNER_ONLY, на MANAGER-дашборд не потрапляє
+    data.dailyMetrics = data.dailyMetrics.filter((r, i) => i === 0 || r[2] !== 'Дохід');
 
     res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
     res.status(200).json(data);

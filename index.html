@@ -190,8 +190,18 @@ function renderTable(el, headers, rows) {
 
 async function load() {
     let data;
+    const urlKey = new URLSearchParams(location.search).get('key');
+    if (urlKey) localStorage.setItem('dashKey', urlKey);
+    const key = urlKey || localStorage.getItem('dashKey') || '';
     try {
-        const res = await fetch('/api/data');
+        const res = await fetch('/api/data' + (key ? '?key=' + encodeURIComponent(key) : ''));
+        if (res.status === 401) {
+            document.getElementById('loading').style.display = 'none';
+            const err = document.getElementById('error');
+            err.textContent = 'Доступ захищено. Відкрийте дашборд за персональним посиланням з ключем (?key=...), яке надав Gilbert.';
+            err.style.display = 'block';
+            return;
+        }
         if (!res.ok) throw new Error(res.status);
         data = await res.json();
     } catch (e) {

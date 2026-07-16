@@ -131,7 +131,7 @@ export async function runManagerExport(runId = `export-${Date.now()}`) {
         await sheets.spreadsheets.values.update({
           spreadsheetId: managerId,
           range: `${quoteSheetName(sheet.name)}!A1`,
-          valueInputOption: 'RAW',
+          valueInputOption: 'USER_ENTERED', // числа мають бути числами — інакше формули дашборда не рахують
           requestBody: { values: rows }
         });
       }

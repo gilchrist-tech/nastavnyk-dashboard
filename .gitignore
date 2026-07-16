@@ -13,3 +13,7 @@ service-account*.json
 tmp/
 dist/
 coverage/
+
+backups/
+.vercel
+.env*

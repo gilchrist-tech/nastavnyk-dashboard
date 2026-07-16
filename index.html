@@ -7,240 +7,285 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #F0E7D6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto; }
+        body { background: #F0E7D6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #222; }
+        .section { max-width: 1600px; margin: 0 auto; padding: 20px; }
         .header { background: linear-gradient(135deg, #3735C4 0%, #F93D07 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; }
         .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .kpi-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 30px; }
+        .header p { opacity: .92; font-size: 14px; }
+        h2 { margin: 30px 0 16px 0; font-size: 18px; }
+        .kpi-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 10px; }
         .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .alert { padding: 16px; border-radius: 8px; margin-bottom: 12px; }
-        .alert-critical { background: #FFEBEE; border-left: 4px solid #F44336; }
-        .section { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .card .label { margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .card .value { margin: 0 0 6px 0; font-size: 24px; font-weight: bold; }
+        .delta { font-size: 12px; }
+        .up { color: #2E7D32; } .down { color: #C62828; } .flat { color: #999; }
+        .alert { padding: 14px 16px; border-radius: 8px; background: white; border-left: 4px solid #999; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+        .alert h4 { margin: 0 0 4px 0; font-size: 14px; }
+        .alert p { margin: 0; color: #666; font-size: 13px; }
+        .alert .meta { margin-top: 6px; font-size: 11px; color: #999; }
+        .prio-Критично { border-left-color: #B71C1C; background: #FFEBEE; }
+        .prio-Високий { border-left-color: #F44336; background: #FFF5F5; }
+        .prio-Середній { border-left-color: #FFC107; background: #FFFDF5; }
+        .prio-Інформаційно { border-left-color: #90A4AE; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+        .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 14px; }
+        .chart-card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-card h3 { font-size: 14px; margin-bottom: 10px; color: #444; }
+        .chart-wrap { position: relative; height: 240px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 13px; }
+        th { background: #3735C4; color: white; text-align: left; padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+        td { padding: 9px 12px; border-top: 1px solid #EEE; vertical-align: top; }
+        tr:hover td { background: #FAF7F0; }
+        .num { text-align: right; white-space: nowrap; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .b-new { background: #E3F2FD; color: #1565C0; }
+        .b-wait { background: #FFF3E0; color: #E65100; }
+        .b-hist { background: #F3E5F5; color: #6A1B9A; }
+        .table-scroll { overflow-x: auto; }
+        #loading { text-align: center; padding: 60px; font-size: 16px; color: #666; }
+        #error { display: none; text-align: center; padding: 40px; color: #C62828; font-size: 15px; }
+        .prompts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .prompts a { display: block; background: white; border-left: 4px solid #3735C4; border-radius: 8px; padding: 16px; color: inherit; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .prompts a h3 { margin: 0 0 8px 0; color: #3735C4; font-size: 16px; }
+        .prompts a p { margin: 0; color: #555; font-size: 13px; line-height: 1.5; }
+        footer { background: #333; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-top: 40px; }
+        footer p { margin: 0 0 8px 0; font-size: 12px; }
+        footer a { color: white; opacity: 0.9; }
     </style>
 </head>
 <body>
     <div class="section">
         <div class="header">
             <h1>📊 NASTAVNYK BI DASHBOARD</h1>
-            <p>Період: 06.07 — 12.07.2026 | Статус: 🔴 CRITICAL</p>
+            <p id="header-info">Завантаження даних…</p>
         </div>
 
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">🚨 CRITICAL ALERTS</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-bottom: 30px;">
-            <div class="alert alert-critical">
-                <h4 style="margin: 0 0 4px 0;">TikTok Views -95.8%</h4>
-                <p style="margin: 0; color: #666; font-size: 13px;">Падіння з 11K → 456. Потрібна екстрена дія!</p>
+        <div id="loading">⏳ Завантаження живих даних з NASTAVNYK_COMMAND_CENTER…</div>
+        <div id="error">Не вдалося завантажити дані. Спробуйте оновити сторінку.</div>
+
+        <div id="content" style="display:none">
+            <h2>🚨 Активні сигнали</h2>
+            <div class="grid" id="alerts"></div>
+
+            <h2>📈 Ключові показники (останній день з даними)</h2>
+            <div class="kpi-cards" id="kpi"></div>
+
+            <h2>📉 Динаміка (останні 30 днів)</h2>
+            <div class="charts">
+                <div class="chart-card"><h3>GA4: сесії та ключові події</h3><div class="chart-wrap"><canvas id="ch-ga4"></canvas></div></div>
+                <div class="chart-card"><h3>Instagram: охоплення та перегляди</h3><div class="chart-wrap"><canvas id="ch-ig"></canvas></div></div>
+                <div class="chart-card"><h3>Instagram: нові підписники</h3><div class="chart-wrap"><canvas id="ch-igf"></canvas></div></div>
+                <div class="chart-card"><h3>TikTok: перегляди відео за день</h3><div class="chart-wrap"><canvas id="ch-tt"></canvas></div></div>
             </div>
-            <div class="alert" style="background: #FFF3E0; border-left: 4px solid #FFC107;">
-                <h4 style="margin: 0 0 4px 0;">IG ER% Down -32.6%</h4>
-                <p style="margin: 0; color: #666; font-size: 13px;">Падіння при зростанні reach. CTA слабкий.</p>
-            </div>
-            <div class="alert alert-critical">
-                <h4 style="margin: 0 0 4px 0;">Facebook Dead</h4>
-                <p style="margin: 0; color: #666; font-size: 13px;">Reach = 1. Потребує оживлення.</p>
-            </div>
+
+            <h2>🎬 Останні публікації</h2>
+            <div class="table-scroll"><table id="posts"></table></div>
+
+            <h2>✅ Відкриті завдання менеджера</h2>
+            <div class="table-scroll"><table id="tasks"></table></div>
+
+            <h2>🤝 Колаборації</h2>
+            <div class="table-scroll"><table id="collabs"></table></div>
+
+            <h2>🥊 Конкуренти</h2>
+            <div class="grid" id="competitors"></div>
+
+            <h2>⚙️ Останній запуск автоматизації</h2>
+            <div class="grid" id="autolog"></div>
         </div>
 
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">📈 KEY PERFORMANCE INDICATORS</h2>
-        <div class="kpi-cards">
-            <div class="card" style="border-left: 4px solid #FFC107;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">IG REACH</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">2,276</h3>
-                <span style="color: #4CAF50; font-size: 12px;">▲ +77.6%</span>
-            </div>
-            <div class="card" style="border-left: 4px solid #F44336;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">IG ER%</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">3.1%</h3>
-                <span style="color: #F44336; font-size: 12px;">▼ -32.6%</span>
-            </div>
-            <div class="card" style="border-left: 4px solid #F44336;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">TT VIEWS</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">456</h3>
-                <span style="color: #F44336; font-size: 12px;">▼ -95.8%</span>
-            </div>
-            <div class="card" style="border-left: 4px solid #FFC107;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">NEW FOLLOWERS</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">4</h3>
-                <span style="color: #4CAF50; font-size: 12px;">▲ +300%</span>
-            </div>
-            <div class="card" style="border-left: 4px solid #FFC107;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">SITE CLICKS</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">7</h3>
-                <span style="color: #999; font-size: 12px;">— 0%</span>
-            </div>
-            <div class="card" style="border-left: 4px solid #F44336;">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600;">REVENUE (EST.)</p>
-                <h3 style="margin: 0 0 6px 0; font-size: 24px; font-weight: bold;">2.4K</h3>
-                <span style="color: #F44336; font-size: 12px;">▼ -0%</span>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">✅ RECOMMENDED ACTIONS</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-            <div style="background: #FFEBEE; border: 2px solid #F44336; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #F44336;">1️⃣ EMERGENCY: Fix TikTok (24h)</h4>
-                <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.5;">• 5 нових експериментів<br/>• Час публікації 19:00<br/>• 2 відео сьогодні</p>
-            </div>
-            <div style="background: #FFF3E0; border: 2px solid #FFC107; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #F57C00;">2️⃣ HIGH: Fix IG ER (48h)</h4>
-                <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.5;">• CTA Audit<br/>• A/B тест<br/>• Мониторинг</p>
-            </div>
-            <div style="background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #2E7D32;">3️⃣ MEDIUM: Activate Facebook</h4>
-                <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.5;">• Crosspost IG→FB<br/>• Messenger bot<br/>• Реклама</p>
-            </div>
-        </div>
-
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">📋 ANALYTICS OPERATING SYSTEM</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-            <a href="prompts/weekly-social-media-analytics.md" style="display: block; background: white; border-left: 4px solid #3735C4; border-radius: 8px; padding: 16px; color: inherit; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">Weekly report prompt</p>
-                <h3 style="margin: 0 0 8px 0; color: #3735C4; font-size: 18px;">Щотижнева аналітика</h3>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.5;">Повна методологія аналізу Instagram, TikTok, LinkedIn, конкурентів і NASTAVNYK_COMMAND_CENTER.</p>
+        <h2>📋 Analytics Operating System</h2>
+        <div class="prompts">
+            <a href="prompts/weekly-social-media-analytics.md">
+                <h3>Щотижнева аналітика</h3>
+                <p>Повна методологія аналізу Instagram, TikTok, LinkedIn, конкурентів і NASTAVNYK_COMMAND_CENTER.</p>
             </a>
-            <a href="prompts/daily-social-monitoring.md" style="display: block; background: white; border-left: 4px solid #F93D07; border-radius: 8px; padding: 16px; color: inherit; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <p style="margin: 0 0 8px 0; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">Daily monitoring prompt</p>
-                <h3 style="margin: 0 0 8px 0; color: #F93D07; font-size: 18px;">Щоденний Social Media Pulse</h3>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.5;">Протокол щоденного збору метрик, перевірки конкурентів, сигналів ризику й задач для Community Manager.</p>
+            <a href="prompts/daily-social-monitoring.md" style="border-left-color:#F93D07">
+                <h3 style="color:#F93D07">Щоденний Social Media Pulse</h3>
+                <p>Протокол щоденного збору метрик, перевірки конкурентів, сигналів ризику й задач для Community Manager.</p>
             </a>
         </div>
 
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">🧭 NASTAVNYK_COMMAND_CENTER ANALYSIS</h2>
-        <div style="background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 16px;">
-            <p style="margin: 0 0 12px 0; color: #555; font-size: 13px; line-height: 1.6;">
-                Джерело: Google Sheets <strong>NASTAVNYK_COMMAND_CENTER</strong>, останнє оновлення 13.07.2026. Проаналізовано 11/11 аркушів, включно з прихованим INTERNAL Бонус. Приватні компенсаційні дані не публікуються в dashboard.
-            </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-                <div style="background: #F8F8FF; border-left: 4px solid #3735C4; border-radius: 8px; padding: 14px;">
-                    <p style="margin: 0 0 6px 0; color: #777; font-size: 11px; font-weight: 600;">SHEETS CHECKED</p>
-                    <h3 style="margin: 0; color: #3735C4; font-size: 24px;">11/11</h3>
-                </div>
-                <div style="background: #FFEBEE; border-left: 4px solid #F44336; border-radius: 8px; padding: 14px;">
-                    <p style="margin: 0 0 6px 0; color: #777; font-size: 11px; font-weight: 600;">TIKTOK VIEWS</p>
-                    <h3 style="margin: 0; color: #C62828; font-size: 24px;">-95.9%</h3>
-                </div>
-                <div style="background: #FFF3E0; border-left: 4px solid #F93D07; border-radius: 8px; padding: 14px;">
-                    <p style="margin: 0 0 6px 0; color: #777; font-size: 11px; font-weight: 600;">IG ER CHANGE</p>
-                    <h3 style="margin: 0; color: #F93D07; font-size: 24px;">-32.6%</h3>
-                </div>
-                <div style="background: #F5F5F5; border-left: 4px solid #777; border-radius: 8px; padding: 14px;">
-                    <p style="margin: 0 0 6px 0; color: #777; font-size: 11px; font-weight: 600;">AARRR FUNNEL</p>
-                    <h3 style="margin: 0; color: #555; font-size: 24px;">No facts</h3>
-                </div>
-            </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px;">
-            <div style="background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
-                <h3 style="margin: 0 0 12px 0; color: #3735C4; font-size: 17px;">Key Findings: 06.07 — 12.07.2026</h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                    <thead>
-                        <tr style="background: #F0E7D6; color: #333;">
-                            <th style="text-align: left; padding: 9px;">KPI</th>
-                            <th style="text-align: right; padding: 9px;">Current</th>
-                            <th style="text-align: right; padding: 9px;">Previous</th>
-                            <th style="text-align: right; padding: 9px;">Change</th>
-                            <th style="text-align: left; padding: 9px;">Meaning</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Instagram reach</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">2,276</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">1,281</td><td style="padding: 8px; text-align: right; color: #2E7D32; border-bottom: 1px solid #eee;">+77.7%</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Discovery improved, but conversion stayed weak.</td></tr>
-                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Instagram ER</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">3.1%</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">4.6%</td><td style="padding: 8px; text-align: right; color: #C62828; border-bottom: 1px solid #eee;">-32.6%</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Hooks reach non-followers, but CTA and saves need work.</td></tr>
-                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Instagram site clicks</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">7</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">7</td><td style="padding: 8px; text-align: right; color: #777; border-bottom: 1px solid #eee;">0%</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Reach growth did not turn into traffic.</td></tr>
-                        <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">TikTok views</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">456</td><td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee;">11,000</td><td style="padding: 8px; text-align: right; color: #C62828; border-bottom: 1px solid #eee;">-95.9%</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Format or posting rhythm broke; needs 24h reset.</td></tr>
-                        <tr><td style="padding: 8px;">TikTok profile visits</td><td style="padding: 8px; text-align: right;">5</td><td style="padding: 8px; text-align: right;">147</td><td style="padding: 8px; text-align: right; color: #C62828;">-96.6%</td><td style="padding: 8px;">Audience stopped moving from video to profile.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div style="background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h3 style="margin: 0 0 12px 0; color: #F93D07; font-size: 17px;">Content Signal</h3>
-                <p style="margin: 0 0 10px 0; color: #555; font-size: 13px; line-height: 1.6;">
-                    Best July signal: IG video <strong>“Тест для батьків”</strong> on 08.07 reached 580 people, with 90.4% non-followers and ER 4.31%.
-                </p>
-                <p style="margin: 0 0 10px 0; color: #555; font-size: 13px; line-height: 1.6;">
-                    Weakness: the 06.07 post <strong>“У чи В? І чи Й?”</strong> has a suspicious ER value in the sheet. Recheck formula and percentage formatting before using it in reports.
-                </p>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.6;">
-                    Brand note: new copy should use <strong>“репетитор”</strong> consistently. Some stored texts still use old wording.
-                </p>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 16px; overflow-x: auto;">
-            <h3 style="margin: 0 0 12px 0; color: #3735C4; font-size: 17px;">Sheet Audit Summary</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                    <tr style="background: #F0E7D6;">
-                        <th style="text-align: left; padding: 9px;">Аркуш</th>
-                        <th style="text-align: left; padding: 9px;">Призначення</th>
-                        <th style="text-align: left; padding: 9px;">Стан</th>
-                        <th style="text-align: left; padding: 9px;">Що додати / виправити</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Контент-план</td><td style="padding: 8px; border-bottom: 1px solid #eee;">План публікацій квітень-грудень</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Липень є, багато статусів порожні</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Статус, відповідальний, UTM, факт публікації</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Тижневий трекінг</td><td style="padding: 8px; border-bottom: 1px solid #eee;">IG/TikTok KPI по тижнях</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Заповнено до 06.07-12.07</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Додати LinkedIn, saves, shares, заявки</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Ефективність контенту</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Пост-рівень: reach, ER, кліки</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Є липневі публікації</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Перевірити ER формули, додати link/CTA</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Конкурентні удари</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Банк контрмеседжів</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Корисно для креативів</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Додати дату, платформу, доказ, метрику</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">War Room</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Моніторинг BUKI, Mathema, ZNOHub, Anti</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Є записи до 13.07</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Додати URL постів і публічні метрики</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Воронка AARRR</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Відвідувачі → заняття</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Фактичні дані відсутні</td><td style="padding: 8px; border-bottom: 1px solid #eee;">GA4, реєстрації учнів/репетиторів, 1-е заняття</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">KPI менеджера</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Місячні цілі та ваги</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Факти не заповнені</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Щопонеділка оновлювати факт і % виконання</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Колоборації</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Інфлюенсери: cost/reach/clicks</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Stories працюють краще за reels</td><td style="padding: 8px; border-bottom: 1px solid #eee;">CPC, UTM, статус оплати, скріни статистики</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">INTERNAL Бонус</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Прихований службовий розрахунок</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Факти KPI порожні</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Не публікувати; синхронізувати з KPI менеджера</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">UTM система та GA4</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Правила й готові посилання</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Є помилки у source/medium</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Виправити missing utm_source, typo reals/reels</td></tr>
-                    <tr><td style="padding: 8px;">Brand Voice</td><td style="padding: 8px;">Тон і правила бренду</td><td style="padding: 8px;">Корисний guardrail</td><td style="padding: 8px;">Оновити словник: “репетитор”, один CTA</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <h2 style="margin: 30px 0 16px 0; font-size: 18px;">🎯 MANAGER ACTION PLAN</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px;">
-            <div style="background: #FFEBEE; border: 2px solid #F44336; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #C62828;">Критично: TikTok reset за 24 години</h4>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.55;">Опублікувати 2 короткі відео: адаптація “Тест для батьків” і “47 збережених відео не допоможуть”. KPI: 1,500+ переглядів, 50+ profile visits, 3 варіанти hook у тесті.</p>
-            </div>
-            <div style="background: #FFF3E0; border: 2px solid #F93D07; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #F93D07;">Сьогодні: UTM cleanup</h4>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.55;">Виправити July stories links: додати `utm_source=instagram`, стандартизувати `reels`, прибрати Google redirect wrapper. KPI: 100% активних посилань видно в GA4 без `(direct)/(none)`.</p>
-            </div>
-            <div style="background: #F8F8FF; border: 2px solid #3735C4; border-radius: 8px; padding: 16px;">
-                <h4 style="margin: 0 0 8px 0; color: #3735C4;">До завтра: KPI + AARRR факти</h4>
-                <p style="margin: 0; color: #555; font-size: 13px; line-height: 1.55;">Заповнити W14: відвідувачі, реєстрації учнів, реєстрації репетиторів, перші заняття, повторні заняття, DM response time. KPI: жодного порожнього бізнес-поля.</p>
-            </div>
-        </div>
-
-        <div style="background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 16px; overflow-x: auto;">
-            <h3 style="margin: 0 0 12px 0; color: #3735C4; font-size: 17px;">Рекомендації менеджеру на тиждень</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                    <tr style="background: #F0E7D6;">
-                        <th style="text-align: left; padding: 9px;">Пріоритет</th>
-                        <th style="text-align: left; padding: 9px;">Дія</th>
-                        <th style="text-align: left; padding: 9px;">Платформа</th>
-                        <th style="text-align: left; padding: 9px;">Причина</th>
-                        <th style="text-align: left; padding: 9px;">KPI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td style="padding: 8px; color: #C62828; font-weight: 700; border-bottom: 1px solid #eee;">Critical</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Перезапустити TikTok через 2 експерименти з hook</td><td style="padding: 8px; border-bottom: 1px solid #eee;">TikTok</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Views впали з 11,000 до 456</td><td style="padding: 8px; border-bottom: 1px solid #eee;">1,500+ views/video</td></tr>
-                    <tr><td style="padding: 8px; color: #F93D07; font-weight: 700; border-bottom: 1px solid #eee;">High</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Масштабувати “Тест для батьків” у карусель + stories quiz</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Instagram</td><td style="padding: 8px; border-bottom: 1px solid #eee;">90.4% reach від непідписників</td><td style="padding: 8px; border-bottom: 1px solid #eee;">ER 4%+, saves 10+</td></tr>
-                    <tr><td style="padding: 8px; color: #F93D07; font-weight: 700; border-bottom: 1px solid #eee;">High</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Виправити всі активні UTM і перевірити GA4</td><td style="padding: 8px; border-bottom: 1px solid #eee;">All</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Traffic не можна атрибутувати точно</td><td style="padding: 8px; border-bottom: 1px solid #eee;">0 broken UTM</td></tr>
-                    <tr><td style="padding: 8px; color: #F93D07; font-weight: 700; border-bottom: 1px solid #eee;">High</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Створити “НМТ-2027 дорожня карта”</td><td style="padding: 8px; border-bottom: 1px solid #eee;">IG + LinkedIn</td><td style="padding: 8px; border-bottom: 1px solid #eee;">ZNOHub уже забирає roadmap-тему</td><td style="padding: 8px; border-bottom: 1px solid #eee;">20+ saves</td></tr>
-                    <tr><td style="padding: 8px; color: #555; font-weight: 700; border-bottom: 1px solid #eee;">Medium</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Масштабувати only performance-stories у блогерів</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Influencers</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Lena Shalim: ~2.4 грн/click; reels були слабкі</td><td style="padding: 8px; border-bottom: 1px solid #eee;">CPC ≤ 10 грн</td></tr>
-                    <tr><td style="padding: 8px; color: #555; font-weight: 700;">Medium</td><td style="padding: 8px;">Заміна старої лексики на “репетитор” у всіх нових ТЗ</td><td style="padding: 8px;">All content</td><td style="padding: 8px;">Потрібна єдина бренд-термінологія</td><td style="padding: 8px;">0 old-wording posts</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <footer style="background: #333; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-top: 40px;">
-            <p style="margin: 0 0 8px 0; font-size: 12px;">🤖 NASTAVNYK BI Dashboard v1.0</p>
-            <p style="margin: 0 0 8px 0; font-size: 11px; opacity: 0.8;">Strategic Analytics AI</p>
-            <p style="margin: 0; font-size: 11px;">
-                <a href="/terms.html" style="color: white; opacity: 0.9;">Terms of Service</a>
-                <span style="opacity: 0.5;"> | </span>
-                <a href="/privacy.html" style="color: white; opacity: 0.9;">Privacy Policy</a>
+        <footer>
+            <p>🤖 NASTAVNYK BI Dashboard v2.0 — живі дані з <a href="https://docs.google.com/spreadsheets/d/1PzikJ_rpFJx4SHOAroE0w9-X7eclEgA6IpmExSTEs_4" target="_blank">NASTAVNYK_COMMAND_CENTER</a></p>
+            <p style="font-size:11px;opacity:.8">Оновлюється автоматично щодня о 07:00 · кеш 10 хв</p>
+            <p style="font-size:11px">
+                <a href="/terms.html">Terms of Service</a>
+                <span style="opacity:.5"> | </span>
+                <a href="/privacy.html">Privacy Policy</a>
             </p>
         </footer>
     </div>
+
+<script>
+const fmt = n => n == null ? '—' : new Intl.NumberFormat('uk-UA').format(n);
+const num = v => {
+    if (v == null || v === '') return null;
+    const n = parseFloat(String(v).replace(/\s/g, '').replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function metricMap(rows) {
+    const map = {};
+    rows.slice(1).forEach(r => {
+        if (r[0]) map[r[0] + '|' + r[1] + '|' + r[2]] = num(r[3]);
+    });
+    return map;
+}
+const mval = (map, d, p, m) => map[d + '|' + p + '|' + m] ?? null;
+const series = (map, p, m, dates) => dates.map(d => mval(map, d, p, m));
+const avg = arr => { const v = arr.filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+
+function deltaHtml(cur, base, suffix) {
+    if (cur == null || base == null || base === 0) return '<span class="delta flat">—</span>';
+    const pct = (cur - base) / base * 100;
+    const cls = pct > 2 ? 'up' : pct < -2 ? 'down' : 'flat';
+    const arrow = pct > 2 ? '▲' : pct < -2 ? '▼' : '●';
+    return `<span class="delta ${cls}">${arrow} ${pct > 0 ? '+' : ''}${pct.toFixed(1)}% ${suffix || ''}</span>`;
+}
+
+const C = { blue: '#3735C4', orange: '#F93D07', teal: '#00897B', purple: '#8E24AA' };
+function chart(id, labels, datasets, type = 'line') {
+    new Chart(document.getElementById(id), {
+        type,
+        data: { labels, datasets: datasets.map(d => ({
+            label: d.label, data: d.data,
+            borderColor: d.color, backgroundColor: type === 'bar' ? d.color : d.color + '22',
+            fill: type === 'line', tension: .3, pointRadius: 2, borderWidth: 2, spanGaps: true
+        })) },
+        options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
+            scales: { x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } }, y: { beginAtZero: true, ticks: { font: { size: 10 } } } } }
+    });
+}
+
+const card = (label, value, delta, color) =>
+    `<div class="card" style="border-left:4px solid ${color}"><p class="label">${label}</p><h3 class="value">${value}</h3>${delta || ''}</div>`;
+
+function renderTable(el, headers, rows) {
+    el.innerHTML = '<tr>' + headers.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr>' +
+        (rows.length ? rows.join('') : '<tr><td colspan="' + headers.length + '" style="color:#999">Немає записів</td></tr>');
+}
+
+async function load() {
+    let data;
+    try {
+        const res = await fetch('/api/data');
+        if (!res.ok) throw new Error(res.status);
+        data = await res.json();
+    } catch (e) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        return;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    const map = metricMap(data.dailyMetrics);
+    const allDates = [...new Set(data.dailyMetrics.slice(1).map(r => r[0]).filter(Boolean))].sort();
+    const dates = allDates.slice(-30);
+    const last = allDates.at(-1);
+    const prev7 = allDates.slice(-8, -1);
+
+    document.getElementById('header-info').textContent =
+        `Останні дані: ${last || '—'} · Згенеровано: ${new Date(data.generatedAt).toLocaleString('uk-UA')} · Дані 01–13.07 — історичний імпорт`;
+
+    const igFol = mval(map, last, 'Instagram', 'Підписники всього');
+    const igFolW = mval(map, prev7[0], 'Instagram', 'Підписники всього');
+    const igReach = mval(map, last, 'Instagram', 'Охоплення');
+    const igReach7 = avg(prev7.map(d => mval(map, d, 'Instagram', 'Охоплення')));
+    const sess = mval(map, last, 'GA4', 'Сесії');
+    const sess7 = avg(prev7.map(d => mval(map, d, 'GA4', 'Сесії')));
+    const keyEv = mval(map, last, 'GA4', 'Ключові події');
+    const keyEv7 = avg(prev7.map(d => mval(map, d, 'GA4', 'Ключові події')));
+
+    document.getElementById('kpi').innerHTML =
+        card('IG підписники', fmt(igFol), deltaHtml(igFol, igFolW, 'за 7 дн'), C.blue) +
+        card('IG охоплення / день', fmt(igReach), deltaHtml(igReach, igReach7, 'vs 7-дн серед.'), C.blue) +
+        card('IG перегляди / день', fmt(mval(map, last, 'Instagram', 'Перегляди')), '', C.blue) +
+        card('Кліки на сайт (IG)', fmt(mval(map, last, 'Instagram', 'Кліки на сайт')), '', C.orange) +
+        card('GA4 сесії / день', fmt(sess), deltaHtml(sess, sess7, 'vs 7-дн серед.'), C.teal) +
+        card('GA4 ключові події', fmt(keyEv), deltaHtml(keyEv, keyEv7, 'vs 7-дн серед.'), C.teal) +
+        card('TikTok підписники', fmt(mval(map, last, 'TikTok', 'Підписники всього')), '', C.purple) +
+        card('TikTok перегляди / день', fmt(mval(map, last, 'TikTok', 'Перегляди відео')), '', C.purple);
+
+    const alerts = data.alerts.slice(1).filter(r => r[0] && !/виконано|закрито|скасовано/i.test(r[10] || ''));
+    document.getElementById('alerts').innerHTML = alerts.length ? alerts.map(r => `
+        <div class="alert prio-${esc(r[1])}">
+            <h4>${esc(r[1])} · ${esc(r[2])}: ${esc(r[3])}</h4>
+            <p>${esc(r[4] || '')}</p>
+            <p style="margin-top:6px"><b>Дія:</b> ${esc(r[7] || '—')}</p>
+            <div class="meta">${esc(r[0])} · відп.: ${esc(r[8] || '—')} · дедлайн: ${esc(r[9] || '—')}</div>
+        </div>`).join('')
+        : '<div class="alert"><p>Активних сигналів немає 🎉</p></div>';
+
+    chart('ch-ga4', dates, [
+        { label: 'Сесії', data: series(map, 'GA4', 'Сесії', dates), color: C.teal },
+        { label: 'Ключові події', data: series(map, 'GA4', 'Ключові події', dates), color: C.orange }
+    ]);
+    chart('ch-ig', dates, [
+        { label: 'Охоплення', data: series(map, 'Instagram', 'Охоплення', dates), color: C.blue },
+        { label: 'Перегляди', data: series(map, 'Instagram', 'Перегляди', dates), color: C.purple }
+    ]);
+    chart('ch-igf', dates, [
+        { label: 'Нові підписники', data: series(map, 'Instagram', 'Нові підписники', dates), color: C.orange }
+    ], 'bar');
+    chart('ch-tt', dates, [
+        { label: 'Перегляди', data: series(map, 'TikTok', 'Перегляди відео', dates), color: C.purple }
+    ], 'bar');
+
+    const posts = data.posts.slice(1).filter(r => r[0]).sort((a, b) => String(b[0]).localeCompare(String(a[0]))).slice(0, 10);
+    renderTable(document.getElementById('posts'),
+        ['Дата', 'Платформа', 'Формат', 'Тема', 'Охоплення', 'Перегляди', 'Лайки', 'Комент.', 'Збереж.'],
+        posts.map(r => `<tr>
+            <td>${esc(r[0])}${/HISTORICAL_IMPORT/.test(r[13] || '') ? ' <span class="badge b-hist">імпорт</span>' : ''}</td>
+            <td>${esc(r[1])}</td><td>${esc(r[3])}</td>
+            <td><a href="${esc(r[2])}" target="_blank" style="color:#3735C4;text-decoration:none">${esc((r[4] || '').slice(0, 60)) || 'відкрити'}</a></td>
+            <td class="num">${fmt(num(r[5]))}</td><td class="num">${fmt(num(r[6]))}</td>
+            <td class="num">${fmt(num(r[7]))}</td><td class="num">${fmt(num(r[8]))}</td><td class="num">${fmt(num(r[9]))}</td></tr>`));
+
+    const tasks = data.tasks.slice(1).filter(r => r[3] && !/виконано|скасовано/i.test(r[8] || ''));
+    renderTable(document.getElementById('tasks'),
+        ['Пріоритет', 'Завдання', 'Платформа', 'KPI', 'Дедлайн', 'Статус'],
+        tasks.map(r => `<tr>
+            <td><span class="badge ${/Висок|Критич/.test(r[1] || '') ? 'b-wait' : 'b-new'}">${esc(r[1])}</span></td>
+            <td>${esc(r[3])}</td><td>${esc(r[4])}</td><td>${esc(r[6])}</td><td>${esc(r[7])}</td>
+            <td><span class="badge b-new">${esc(r[8])}</span></td></tr>`));
+
+    const collabs = data.collabs.slice(1).filter(r => r[0] && r[0].startsWith('http'));
+    renderTable(document.getElementById('collabs'),
+        ['Блогер', 'Дата', 'Плейсмент', 'Вартість, грн', 'Охоплення', 'Кліки', 'Підписки', 'CPC, грн', 'Статус'],
+        collabs.map(r => {
+            const handle = (r[0].match(/instagram\.com\/([^/?]+)/) || [])[1] || r[0];
+            const cost = num(r[3]), clicks = num(r[6]);
+            const cpc = cost != null && clicks ? (cost / clicks).toFixed(1) : '—';
+            return `<tr><td><a href="${esc(r[0])}" target="_blank" style="color:#3735C4">@${esc(handle)}</a></td>
+                <td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="num">${fmt(cost)}</td>
+                <td class="num">${esc(r[5] || '—')}</td><td class="num">${esc(r[6] || '—')}</td><td class="num">${esc(r[7] || '—')}</td>
+                <td class="num">${cpc}</td><td>${esc(r[8] || '')}</td></tr>`;
+        }));
+
+    const comp = data.competitors.slice(1).filter(r => r[0]);
+    document.getElementById('competitors').innerHTML = comp.length ? comp.map(r => `
+        <div class="alert ${/BLOCKED/.test(r[13] || '') ? 'prio-Середній' : ''}">
+            <h4>${esc(r[1])} · ${esc(r[2])}</h4>
+            <p>${esc(r[5] || '')}</p>
+            <p style="margin-top:6px">${esc(r[11] || '')}</p>
+            <div class="meta">${esc(r[0])} · джерело: ${esc(r[12] || '—')} · статус: <b>${esc(r[13] || '—')}</b></div>
+        </div>`).join('')
+        : '<div class="alert"><p>Записів немає</p></div>';
+
+    const log = data.automationLog.slice(1).filter(r => r[0]).at(-1);
+    document.getElementById('autolog').innerHTML = log ? `
+        <div class="alert ${log[12] === 'COMPLETE' ? '' : 'prio-Високий'}">
+            <h4>${esc(log[0])} — <b>${esc(log[12] || '')}</b></h4>
+            <p>${esc(log[1])} → ${esc(log[2])} · джерела: ${esc(log[4] || '—')}</p>
+            <p style="margin-top:6px">Рядків: ${esc(log[7] || '0')} створено, ${esc(log[8] || '0')} оновлено, ${esc(log[9] || '0')} дублікатів пропущено · завдань: ${esc(log[10] || '0')} · сигналів: ${esc(log[11] || '0')}</p>
+            ${log[13] ? '<p style="margin-top:6px;color:#C62828">' + esc(log[13]) + '</p>' : ''}
+        </div>` : '<div class="alert"><p>Журнал порожній</p></div>';
+}
+load();
+</script>
 </body>
 </html>

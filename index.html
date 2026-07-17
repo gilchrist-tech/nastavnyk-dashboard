@@ -48,9 +48,9 @@
         #loading { text-align: center; padding: 60px; font-size: 16px; color: #666; }
         #error { display: none; text-align: center; padding: 40px; color: #C62828; font-size: 15px; }
         .prompts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-        .prompts a { display: block; background: white; border-left: 4px solid #3735C4; border-radius: 8px; padding: 16px; color: inherit; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .prompts a h3 { margin: 0 0 8px 0; color: #3735C4; font-size: 16px; }
-        .prompts a p { margin: 0; color: #555; font-size: 13px; line-height: 1.5; }
+        .prompt-card { background: white; border-left: 4px solid #3735C4; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .prompt-card h3 { margin: 0 0 8px 0; color: #3735C4; font-size: 16px; }
+        .prompt-card p { margin: 0; color: #555; font-size: 13px; line-height: 1.5; }
         footer { background: #333; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-top: 40px; }
         footer p { margin: 0 0 8px 0; font-size: 12px; }
         footer a { color: white; opacity: 0.9; }
@@ -116,14 +116,14 @@
 
         <h2>📋 Analytics Operating System</h2>
         <div class="prompts">
-            <a href="prompts/weekly-social-media-analytics.md">
+            <div class="prompt-card">
                 <h3>Щотижнева аналітика</h3>
                 <p>Повна методологія аналізу Instagram, TikTok, LinkedIn, конкурентів і NASTAVNYK_COMMAND_CENTER.</p>
-            </a>
-            <a href="prompts/daily-social-monitoring.md" style="border-left-color:#F93D07">
+            </div>
+            <div class="prompt-card" style="border-left-color:#F93D07">
                 <h3 style="color:#F93D07">Щоденний Social Media Pulse</h3>
                 <p>Протокол щоденного збору метрик, перевірки конкурентів, сигналів ризику й задач для Community Manager.</p>
-            </a>
+            </div>
         </div>
 
         <footer>

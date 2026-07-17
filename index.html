@@ -196,10 +196,16 @@ async function load() {
     try {
         const res = await fetch('/api/data' + (key ? '?key=' + encodeURIComponent(key) : ''));
         if (res.status === 401) {
+            localStorage.removeItem('dashKey');
             document.getElementById('loading').style.display = 'none';
             const err = document.getElementById('error');
-            err.textContent = 'Доступ захищено. Відкрийте дашборд за персональним посиланням з ключем (?key=...), яке надав Gilbert.';
+            err.innerHTML = '<p style="margin-bottom:14px">🔒 Дашборд захищено. Відкрийте його за персональним посиланням від Gilbert — або введіть ключ доступу:</p>' +
+                '<input id="key-input" type="password" placeholder="ключ доступу" style="padding:10px 14px;border:1px solid #ccc;border-radius:8px;font-size:14px;width:240px;max-width:80%"> ' +
+                '<button onclick="location.href=\'/?key=\'+encodeURIComponent(document.getElementById(\'key-input\').value.trim())" style="padding:10px 18px;border:none;border-radius:8px;background:#3735C4;color:#fff;font-size:14px;cursor:pointer">Увійти</button>';
             err.style.display = 'block';
+            document.getElementById('key-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') location.href = '/?key=' + encodeURIComponent(e.target.value.trim());
+            });
             return;
         }
         if (!res.ok) throw new Error(res.status);

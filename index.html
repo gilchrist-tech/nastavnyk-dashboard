@@ -373,7 +373,7 @@ async function load() {
             <td style="color:#8A7F6C;font-size:12px">${esc(r[1])}</td>
             <td><span class="badge ${/В роботі/i.test(r[7]) ? 'b-wait' : 'b-new'}">${esc(r[7])}</span></td></tr>`));
 
-    const tasks = data.tasks.slice(1).filter(r => r[3] && !/виконано|скасовано/i.test(r[8] || ''));
+    const tasks = data.tasks.slice(1).filter(r => r[3] && !/виконано|скасовано/i.test((r[8] || '') + ' ' + (r[9] || '')));
     renderTable(document.getElementById('tasks'),
         ['Пріоритет', 'Завдання', 'Платформа', 'KPI', 'Дедлайн', 'Статус'],
         tasks.map(r => `<tr>

@@ -1,0 +1,41 @@
+name: NASTAVNYK daily collect
+
+on:
+  schedule:
+    # 05:00 UTC = 07:00 Europe/Warsaw (літній час CEST). Взимку — 06:00 місцевого.
+    - cron: '0 5 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: nastavnyk-daily
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Відтворити секрети
+        env:
+          ENV_LOCAL: ${{ secrets.ENV_LOCAL }}
+          GOOGLE_CREDENTIALS_FILE: ${{ secrets.GOOGLE_CREDENTIALS_FILE }}
+        run: |
+          printf '%s' "$ENV_LOCAL" > .env.local
+          mkdir -p credentials
+          printf '%s' "$GOOGLE_CREDENTIALS_FILE" > credentials/nastavnyk-command-center.json
+
+      - name: Щоденний збір + аналітика
+        run: node scripts/cloud-daily.js
+
+      - name: Прибрати секрети
+        if: always()
+        run: rm -f .env.local credentials/nastavnyk-command-center.json
